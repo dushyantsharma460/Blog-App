@@ -1,4 +1,4 @@
-# 🌿 Dushyant Blog - A Modern Appwrite-Powered Blogging Platform
+# 🌿 Dushyant Blog - A Modern Appwrite-Powered Blogging Platform(BAAS Project)
 
 > A sleek, responsive blogging platform built with React, Tailwind CSS, and Appwrite backend
 
