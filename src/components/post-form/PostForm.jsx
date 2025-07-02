@@ -1,15 +1,15 @@
 import React, { useCallback } from "react";
 import { useForm } from "react-hook-form";
 import { Button, Input, RTE, Select } from "..";
-import service from "../../appwrite/conf";
+import appwriteService from "../../appwrite/config";
 import { useNavigate } from "react-router-dom";
 import { useSelector } from "react-redux";
 
 export default function PostForm({ post }) {
     const { register, handleSubmit, watch, setValue, control, getValues } = useForm({
         defaultValues: {
-            title: post?.title || "",
-            slug: post?.$id || "",
+            title: post?.title || "", 
+            slug: post?.$id || "",   
             content: post?.content || "",
             status: post?.status || "active",
         },
@@ -20,13 +20,13 @@ export default function PostForm({ post }) {
 
     const submit = async (data) => {
         if (post) {
-            const file = data.image[0] ? await service.uploadFile(data.image[0]) : null;
+            const file = data.image[0] ? await appwriteService.uploadFile(data.image[0]) : null;
 
             if (file) {
-                service.deleteFile(post.featuredImage);
+                appwriteService.deleteFile(post.featuredImage);
             }
 
-            const dbPost = await service.updatePost(post.$id, {
+            const dbPost = await appwriteService.updatePost(post.$id, {
                 ...data,
                 featuredImage: file ? file.$id : undefined,
             });
@@ -35,12 +35,12 @@ export default function PostForm({ post }) {
                 navigate(`/post/${dbPost.$id}`);
             }
         } else {
-            const file = await service.uploadFile(data.image[0]);
+            const file = await appwriteService.uploadFile(data.image[0]);
 
             if (file) {
                 const fileId = file.$id;
                 data.featuredImage = fileId;
-                const dbPost = await service.createPost({ ...data, userId: userData.$id });
+                const dbPost = await appwriteService.createPost({ ...data, userId: userData.$id });
 
                 if (dbPost) {
                     navigate(`/post/${dbPost.$id}`);
@@ -71,76 +71,77 @@ export default function PostForm({ post }) {
     }, [watch, slugTransform, setValue]);
 
     return (
-        <form onSubmit={handleSubmit(submit)} className="max-w-4xl mx-auto p-6 bg-white rounded-lg shadow-sm border border-gray-200">
-            <div className="mb-8">
-                <h2 className="text-2xl font-bold text-gray-800 mb-2">
-                    {post ? 'Edit Post' : 'Create New Post'}
-                </h2>
-                <div className="w-20 h-1 bg-blue-600 rounded-full"></div>
-            </div>
-
-            <div className="flex flex-wrap -mx-3">
-                <div className="w-full lg:w-2/3 px-3">
-                    <Input
-                        label="Title"
-                        placeholder="Enter post title"
-                        className="mb-6"
-                        {...register("title", { required: true })}
-                    />
-                    <Input
-                        label="Slug"
-                        placeholder="Enter post slug"
-                        className="mb-6"
-                        {...register("slug", { required: true })}
-                        onInput={(e) => {
-                            setValue("slug", slugTransform(e.currentTarget.value), { shouldValidate: true });
-                        }}
-                    />
-                    <RTE 
-                        label="Content" 
-                        name="content" 
-                        control={control} 
-                        defaultValue={getValues("content")}
-                    />
+    <form onSubmit={handleSubmit(submit)} className="max-w-6xl mx-auto py-8 px-4">
+      <div className="bg-white rounded-xl shadow-md p-6">
+        <h1 className="text-2xl font-bold text-gray-800 mb-6">
+          {post ? 'Edit Post' : 'Create New Post'}
+        </h1>
+        
+        <div className="grid grid-cols-1 lg:grid-cols-3 gap-8">
+          <div className="lg:col-span-2 space-y-6">
+            <Input
+              label="Title"
+              placeholder="Enter post title"
+              className="text-lg"
+              {...register("title", { required: true })}
+            />
+            
+            <Input
+              label="Slug"
+              placeholder="Post slug"
+              {...register("slug", { required: true })}
+              onInput={(e) => {
+                setValue("slug", slugTransform(e.currentTarget.value), { shouldValidate: true });
+              }}
+            />
+            
+            <RTE 
+              label="Content" 
+              name="content" 
+              control={control} 
+              defaultValue={getValues("content")} 
+            />
+          </div>
+          
+          <div className="space-y-6">
+            <div className="bg-gray-50 p-4 rounded-lg">
+              <h3 className="font-medium text-gray-700 mb-3">Post Settings</h3>
+              
+              <Input
+                label="Featured Image"
+                type="file"
+                accept="image/png, image/jpg, image/jpeg, image/gif"
+                {...register("image", { required: !post })}
+              />
+              
+              {post && (
+                <div className="mt-4">
+                  <p className="text-sm text-gray-600 mb-2">Current Image:</p>
+                  <img
+                    src={appwriteService.getFilePreview(post.featuredImage)}
+                    alt={post.title}
+                    className="rounded-lg w-full h-48 object-cover"
+                  />
                 </div>
-
-                <div className="w-full lg:w-1/3 px-3">
-                    <div className="bg-gray-50 p-4 rounded-lg border border-gray-200">
-                        <Input
-                            label="Featured Image"
-                            type="file"
-                            className="mb-6"
-                            accept="image/png, image/jpg, image/jpeg, image/gif"
-                            {...register("image", { required: !post })}
-                        />
-                        
-                        {post && (
-                            <div className="w-full mb-6 rounded-lg overflow-hidden border border-gray-200">
-                                <img
-                                    src={service.getFilePreview(post.featuredImage)}
-                                    alt={post.title}
-                                    className="w-full h-auto"
-                                />
-                            </div>
-                        )}
-
-                        <Select
-                            options={["active", "inactive"]}
-                            label="Status"
-                            className="mb-6"
-                            {...register("status", { required: true })}
-                        />
-
-                        <Button 
-                            type="submit" 
-                            bgColor={post ? "bg-blue-600" : "bg-green-600"}
-                            className="w-full"
-                        >
-                            {post ? 'Update Post' : 'Publish Post'}
-                        </Button>
-                    </div>
-                </div>
+              )}
+              
+              <Select
+                options={["active", "inactive"]}
+                label="Status"
+                className="mt-4"
+                {...register("status", { required: true })}
+              />
             </div>
-        </form>
-    );
+            
+            <Button 
+              type="submit" 
+              className="w-full bg-gradient-to-r from-blue-600 to-blue-700 hover:from-blue-700 hover:to-blue-800 text-white py-3 rounded-lg font-medium"
+            >
+              {post ? 'Update Post' : 'Publish Post'}
+            </Button>
+          </div>
+        </div>
+      </div>
+    </form>
+  );
 }
