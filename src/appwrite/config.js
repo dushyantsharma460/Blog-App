@@ -96,7 +96,6 @@ export class Service{
         }
     }
 
-    // file upload service
 
     async uploadFile(file){
         try {
@@ -124,12 +123,16 @@ export class Service{
         }
     }
 
-    getFilePreview(fileId){
-        return this.bucket.getFilePreview(
-            conf.appwriteBucketId,
-            fileId
-        )
+    getFilePreview(fileId) {
+    if (!fileId) return null;
+    
+    try {
+        return `${conf.appwriteUrl}/storage/buckets/${conf.appwriteBucketId}/files/${fileId}/view?project=${conf.appwriteProjectId}`;
+    } catch (error) {
+        console.log("Appwrite service :: getFilePreview :: error", error);
+        return null;
     }
+}
 }
 
 

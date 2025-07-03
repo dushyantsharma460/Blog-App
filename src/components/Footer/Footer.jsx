@@ -9,7 +9,7 @@ function Footer() {
         <div className="grid grid-cols-1 md:grid-cols-4 gap-8">
           <div className="md:col-span-2">
             <div className="flex items-center mb-4">
-              <Logo width="100px" className="text-white" />
+              <Logo width="100px" className="text-white" variant="footer" />
             </div>
             <p className="text-gray-400">
               A modern blogging platform for creators and thinkers.
